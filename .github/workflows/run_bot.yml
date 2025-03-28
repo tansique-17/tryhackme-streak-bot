@@ -1,13 +1,13 @@
-name: TryHackMe Streak Bot
+name: Run TryHackMe Bot
 
 on:
   schedule:
-    - cron: "0 8 * * *"  # Runs daily at 8 AM UTC (change time if needed)
-  workflow_dispatch:  # Allows manual triggering
+    - cron: "0 0 * * *"  # Runs daily at midnight UTC
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -15,10 +15,17 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.9"
 
       - name: Install Dependencies
-        run: pip install -r requirements.txt || true
+        run: |
+          pip install -r requirements.txt
 
-      - name: Run Script
+      - name: Install Chrome & WebDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          pip install webdriver-manager
+          
+      - name: Run Bot
         run: python thm.py
