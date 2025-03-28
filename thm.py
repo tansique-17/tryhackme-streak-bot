@@ -13,7 +13,7 @@ ANSWER = "flag{connection_verified}"
 
 # Set up WebDriver (SHOW browser for debugging)
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Comment this to see the browser
+#options.add_argument("--headless")  # Comment this to see the browser
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
