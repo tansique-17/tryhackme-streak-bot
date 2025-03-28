@@ -1,42 +1,47 @@
-name: TryHackMe Automation
+name: Run TryHackMe Automation
 
-on: 
+on:
   push:
-  schedule:
-    - cron: "0 12 * * *"  # Runs every day at 12 PM UTC
+    branches:
+      - main
 
 jobs:
-  run-thm:
+  run-automation:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y wget unzip xvfb
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install -y ./google-chrome-stable_current_amd64.deb
+          rm google-chrome-stable_current_amd64.deb
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y xvfb unzip google-chrome-stable
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Verify Chrome Installation
+        run: google-chrome --version || echo "⚠️ Chrome is NOT installed!"
 
-    - name: Install Chromedriver (matching Chrome version)
-      run: |
-        CHROME_VERSION=$(google-chrome --version | grep -oP '[0-9]+\.[0-9]+\.[0-9]+')
-        LATEST_DRIVER=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-        wget -q "https://chromedriver.storage.googleapis.com/${LATEST_DRIVER}/chromedriver_linux64.zip"
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/bin/chromedriver
-        chmod +x /usr/bin/chromedriver
-        chromedriver --version
+      - name: Install Chromedriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | grep -oP '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "Detected Chrome Version: $CHROME_VERSION"
+          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+          echo "Installing Chromedriver Version: $CHROMEDRIVER_VERSION"
+          wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          rm chromedriver_linux64.zip
 
-    - name: Run TryHackMe Bot
-      run: |
-        Xvfb :99 -screen 0 1920x1080x24 &
-        export DISPLAY=:99
-        python thm.py
+      - name: Install Python Dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install selenium
+
+      - name: Run TryHackMe Automation Script
+        run: xvfb-run --auto-servernum python thm.py
+z
