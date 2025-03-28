@@ -1,9 +1,12 @@
 name: Run TryHackMe Automation
 
 on:
-  push:
+  push:   # ✅ Runs automatically when pushing to `main`
     branches:
       - main
+  schedule:  # ✅ Runs automatically every day at 00:00 UTC
+    - cron: "0 0 * * *"
+  workflow_dispatch:  # ✅ Allows manual execution from GitHub UI
 
 jobs:
   run-automation:
@@ -44,4 +47,3 @@ jobs:
 
       - name: Run TryHackMe Automation Script
         run: xvfb-run --auto-servernum python thm.py
-z
