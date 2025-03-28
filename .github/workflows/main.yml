@@ -1,9 +1,9 @@
 name: Run TryHackMe Automation
 
 on:
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:  # Manual trigger
   schedule:
-    - cron: "0 6 * * *"  # Runs every day at 6 AM UTC (adjust as needed)
+    - cron: "0 6 * * *"  # Runs daily at 6 AM UTC (change as needed)
 
 jobs:
   run-thm:
@@ -16,11 +16,16 @@ jobs:
       - name: 🏗 Set Up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'  # Adjust if needed
+          python-version: '3.10'
 
       - name: 📦 Install Dependencies
         run: |
           pip install selenium webdriver-manager pickle-mixin
 
+      - name: 🔧 Start Xvfb (Virtual Display)
+        run: Xvfb :99 -screen 0 1920x1080x24 &
+
       - name: 🚀 Run THM Script
+        env:
+          DISPLAY: ":99"  # Ensures the headless browser can run
         run: python thm.py
