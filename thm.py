@@ -1,63 +1,71 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 
-# Set up Chrome WebDriver options
+# 🛠 Setup Chrome WebDriver with Headless Mode for CI/CD
 options = webdriver.ChromeOptions()
-options.add_argument("--start-maximized")  # Maximize window
-options.add_argument("--disable-blink-features=AutomationControlled")  # Avoid detection
-options.headless = False  # Disable headless mode for debugging
+options.add_argument("--headless=new")  # Headless mode for GitLab CI/CD
+options.add_argument("--disable-gpu")  # Disables GPU for better stability
+options.add_argument("--no-sandbox")  # Required for GitLab CI/CD
+options.add_argument("--disable-dev-shm-usage")  # Prevents memory issues
+options.add_argument("--window-size=1920,1080")  # Set screen size for headless mode
+options.add_argument("--disable-blink-features=AutomationControlled")  # Avoid bot detection
 
-# Start WebDriver
-driver = webdriver.Chrome(options=options)
+# 🌐 Initialize WebDriver (Auto-downloads correct ChromeDriver version)
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
     print("🔄 Opening TryHackMe...")
-    driver.get("https://tryhackme.com/")  # Change to the correct URL
+    driver.get("https://tryhackme.com/")
 
-    # Wait for cookies (if applicable)
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//button[contains(text(),'Accept')]"))
-    ).click()
-    print("🍪 Cookies accepted.")
+    # ✅ Accept Cookies
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Accept')]"))
+        ).click()
+        print("🍪 Cookies accepted.")
+    except:
+        print("⚠️ No cookies popup found, continuing...")
 
-    # Open the tutorial room
-    print("📂 Opening the tutorial room...")
-    driver.get("https://tryhackme.com/room/tutorial")  # Update to correct room URL
+    # 🏴 Open the tutorial room
+    driver.get("https://tryhackme.com/room/tutorial")
+    print("📂 Opened the tutorial room.")
 
-    # Wait for options button
+    # ✅ Click Options Button
     try:
         options_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[2]/div[2]/div/div[2]/button[4]"))
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Options')]"))
         )
         options_button.click()
         print("✅ Options button clicked!")
     except Exception as e:
         print(f"❌ Error clicking options button: {e}")
 
-    # Wait for Reset button
+    # ✅ Click Reset Button
     try:
         reset_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div/div[1]/div"))
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'modal')]//button[contains(text(),'Reset')]"))
         )
         reset_button.click()
         print("✅ Reset button clicked!")
     except Exception as e:
         print(f"❌ Reset button not found: {e}")
 
-    # Wait for Confirmation button
+    # ✅ Confirm Reset
     try:
         confirm_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div/footer/button[2]"))
+            EC.element_to_be_clickable((By.XPATH, "//footer//button[contains(text(),'Confirm')]"))
         )
         confirm_button.click()
         print("✅ Confirmation button clicked!")
     except Exception as e:
         print(f"❌ Confirmation button not found: {e}")
 
-    # Enter answer
+    # ✅ Enter Answer
     try:
         answer_field = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter your answer']"))
@@ -65,23 +73,20 @@ try:
         answer_field.send_keys("Sample Answer")
         print("📝 Answer entered!")
 
-        # Submit button
+        # ✅ Submit Answer
         submit_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[4]/div/div/div/div[2]/div/section/div[2]/div[2]/form/div[2]/button[1]"))
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(),'Submit')]"))
         )
         submit_button.click()
         print("🎉 Answer submitted successfully!")
     except Exception as e:
         print(f"❌ Error submitting answer: {e}")
 
-    # Final confirmation message
     print("✅ TryHackMe streak successfully updated!")
 
 except Exception as main_error:
     print(f"🚨 Fatal Error: {main_error}")
 
 finally:
-    # Close browser after 5 seconds
-    print("🛑 Process completed. Closing browser in 5 seconds...")
-    time.sleep(5)
+    print("🛑 Process completed. Closing browser...")
     driver.quit()
