@@ -1,31 +1,37 @@
-name: Run TryHackMe Automation
+name: Run THM Automation
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions
   schedule:
-    - cron: "0 6 * * *"  # Runs daily at 6 AM UTC (change as needed)
+    - cron: '0 0 * * *'  # Runs every day at midnight (Adjust if needed)
 
 jobs:
-  run-thm:
-    runs-on: ubuntu-latest
+  run-thm-script:
+    runs-on: ubuntu-latest  # Use a Linux runner
 
     steps:
-      - name: 🛎 Checkout Repository
-        uses: actions/checkout@v3
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v4  # Fetch code from repo
 
-      - name: 🏗 Set Up Python
+      - name: 🐍 Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'  # Adjust Python version if needed
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install selenium webdriver-manager pickle-mixin
 
-      - name: 🔧 Start Xvfb (Virtual Display)
-        run: Xvfb :99 -screen 0 1920x1080x24 &
+      - name: 🌐 Install Xvfb (for GUI support in headless mode)
+        run: sudo apt-get install -y xvfb
 
-      - name: 🚀 Run THM Script
-        env:
-          DISPLAY: ":99"  # Ensures the headless browser can run
-        run: python thm.py
+      - name: 🚀 Run THM automation script
+        run: xvfb-run --auto-servernum python thm.py
+
+      - name: 📜 Upload logs (if needed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: thm.log  # Change to your actual log file if applicable
