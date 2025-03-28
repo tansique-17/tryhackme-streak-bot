@@ -1,0 +1,24 @@
+name: TryHackMe Streak Bot
+
+on:
+  schedule:
+    - cron: "0 8 * * *"  # Runs daily at 8 AM UTC (change time if needed)
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt || true
+
+      - name: Run Script
+        run: python thm.py
