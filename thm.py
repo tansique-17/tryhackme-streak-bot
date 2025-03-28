@@ -15,7 +15,7 @@ ANSWER = "flag{connection_verified}"
 
 # Set up WebDriver (Headless for GitHub Actions)
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Run in headless mode for CI/CD
+#options.add_argument("--headless")  # Run in headless mode for CI/CD
 options.add_argument("--no-sandbox")  # Fix for GitHub Actions
 options.add_argument("--disable-dev-shm-usage")  # Prevent memory issues
 options.add_argument("--window-size=1920,1080")  # Ensure full viewport rendering
