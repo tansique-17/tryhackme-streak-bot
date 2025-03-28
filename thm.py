@@ -2,6 +2,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import pickle
 import time
@@ -11,9 +13,13 @@ COOKIE_FILE = "tryhackme_cookies.pkl"
 ROOM_URL = "https://tryhackme.com/room/tutorial"
 ANSWER = "flag{connection_verified}"
 
-# Set up WebDriver (SHOW browser for debugging)
+# Set up WebDriver (Headless for GitHub Actions)
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")  # Comment this to see the browser
+options.add_argument("--headless")  # Run in headless mode for CI/CD
+options.add_argument("--no-sandbox")  # Fix for GitHub Actions
+options.add_argument("--disable-dev-shm-usage")  # Prevent memory issues
+options.add_argument("--window-size=1920,1080")  # Ensure full viewport rendering
+
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 try:
@@ -39,23 +45,27 @@ try:
 
     # Step 3: Click the options button to reveal reset option
     try:
-        options_button = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[2]/div[2]/div/div[2]/button[4]")
+        options_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Options')]"))
+        )
         options_button.click()
-        time.sleep(3)
         print("📂 Options menu opened!")
+        time.sleep(3)
     except Exception as e:
         print(f"❌ Error clicking options button: {e}")
 
     # Step 4: Click Reset Room Button
     reset_clicked = False
     reset_xpaths = [
-        "/html/body/div[3]/div/div[1]/div",  # First XPath
-        "//*[@id='radix-:r1l:']/div[1]/div"  # Alternative XPath
+        "//div[contains(text(), 'Reset Room')]",  # Dynamic XPath
+        "/html/body/div[3]/div/div[1]/div"  # Backup XPath
     ]
 
     for xpath in reset_xpaths:
         try:
-            reset_button = driver.find_element(By.XPATH, xpath)
+            reset_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, xpath))
+            )
             reset_button.click()
             print(f"✅ Room reset button clicked using XPath: {xpath}")
             reset_clicked = True
@@ -70,13 +80,15 @@ try:
     # Step 5: Click "Yes" to confirm reset
     yes_clicked = False
     yes_xpaths = [
-        "//*[@id='radix-:r1m:']/footer/button[2]",  # New XPath
-        "/html/body/div[3]/div/footer/button[2]"  # Old XPath
+        "//button[contains(text(), 'Yes')]",  # Dynamic XPath
+        "/html/body/div[3]/div/footer/button[2]"  # Backup XPath
     ]
 
     for xpath in yes_xpaths:
         try:
-            yes_button = driver.find_element(By.XPATH, xpath)
+            yes_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, xpath))
+            )
             yes_button.click()
             print(f"✅ Room reset confirmed using XPath: {xpath}")
             yes_clicked = True
@@ -90,7 +102,9 @@ try:
 
     # Step 6: Enter the answer
     try:
-        answer_input = driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/div[2]/div/main/div[4]/div/div/div/div[2]/div/section/div[2]/div[2]/form/div[1]/div/input')
+        answer_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@type='text']"))
+        )
         answer_input.send_keys(ANSWER)
         time.sleep(3)
         print("📝 Answer entered!")
@@ -99,13 +113,15 @@ try:
 
     # Step 7: Click Submit Button
     try:
-        submit_button = driver.find_element(By.XPATH, '/html/body/div[1]/div[1]/div/div[2]/div/main/div[4]/div/div/div/div[2]/div/section/div[2]/div[2]/form/div[2]/button[1]')
+        submit_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Submit')]"))
+        )
         submit_button.click()
         print("🎉 TryHackMe streak successfully updated!")
 
         # NEW: Wait 30 seconds after submitting
         print("⏳ Waiting 30 seconds to ensure streak updates...")
-        time.sleep(0)
+        time.sleep(30)
 
     except Exception as e:
         print(f"❌ Error clicking submit button: {e}")
@@ -115,5 +131,5 @@ except Exception as e:
 
 finally:
     print("🛑 Process completed. Closing browser in 5 seconds...")
-    time.sleep(10)
+    time.sleep(5)
     driver.quit()
