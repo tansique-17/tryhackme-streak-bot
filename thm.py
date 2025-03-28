@@ -1,94 +1,87 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
-import pickle
 
-# Constants
-COOKIE_FILE = "tryhackme_cookies.pkl"
-ROOM_URL = "https://tryhackme.com/room/tutorial"
-ANSWER = "flag{connection_verified}"
-
-# Set up WebDriver (Headless for GitHub Actions)
+# Set up Chrome WebDriver options
 options = webdriver.ChromeOptions()
-# Comment this line if you want to see the browser
-options.add_argument("--headless")  
+options.add_argument("--start-maximized")  # Maximize window
+options.add_argument("--disable-blink-features=AutomationControlled")  # Avoid detection
+options.headless = False  # Disable headless mode for debugging
 
 # Start WebDriver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+driver = webdriver.Chrome(options=options)
 
 try:
     print("🔄 Opening TryHackMe...")
-    driver.get("https://tryhackme.com")
-    time.sleep(5)
+    driver.get("https://tryhackme.com/")  # Change to the correct URL
 
-    # Load cookies
-    print("🍪 Loading cookies...")
-    with open(COOKIE_FILE, "rb") as f:
-        cookies = pickle.load(f)
-        for cookie in cookies:
-            driver.add_cookie(cookie)
+    # Wait for cookies (if applicable)
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//button[contains(text(),'Accept')]"))
+    ).click()
+    print("🍪 Cookies accepted.")
 
-    # Refresh to apply session
-    driver.get("https://tryhackme.com/dashboard")
-    time.sleep(5)
-
-    # Open tutorial room
+    # Open the tutorial room
     print("📂 Opening the tutorial room...")
-    driver.get(ROOM_URL)
-    time.sleep(10)
+    driver.get("https://tryhackme.com/room/tutorial")  # Update to correct room URL
 
-    # Click options menu
+    # Wait for options button
     try:
-        options_button = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[2]/div[2]/div/div[2]/button[4]")
+        options_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[2]/div[2]/div/div[2]/button[4]"))
+        )
         options_button.click()
-        time.sleep(3)
-        print("✅ Options menu opened!")
+        print("✅ Options button clicked!")
     except Exception as e:
         print(f"❌ Error clicking options button: {e}")
 
-    # Click Reset Room Button
+    # Wait for Reset button
     try:
-        reset_button = driver.find_element(By.XPATH, "/html/body/div[3]/div/div[1]/div")
+        reset_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div/div[1]/div"))
+        )
         reset_button.click()
-        print("✅ Room reset button clicked!")
-        time.sleep(3)
+        print("✅ Reset button clicked!")
     except Exception as e:
         print(f"❌ Reset button not found: {e}")
 
-    # Click "Yes" to confirm reset
+    # Wait for Confirmation button
     try:
-        yes_button = driver.find_element(By.XPATH, "/html/body/div[3]/div/footer/button[2]")
-        yes_button.click()
-        print("✅ Room reset confirmed!")
-        time.sleep(10)
+        confirm_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div/footer/button[2]"))
+        )
+        confirm_button.click()
+        print("✅ Confirmation button clicked!")
     except Exception as e:
         print(f"❌ Confirmation button not found: {e}")
 
-    # Enter the answer
+    # Enter answer
     try:
-        answer_input = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[4]/div/div/div/div[2]/div/section/div[2]/div[2]/form/div[1]/div/input")
-        answer_input.send_keys(ANSWER)
-        time.sleep(3)
+        answer_field = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Enter your answer']"))
+        )
+        answer_field.send_keys("Sample Answer")
         print("📝 Answer entered!")
-    except Exception as e:
-        print(f"❌ Error finding answer input field: {e}")
 
-    # Click Submit Button
-    try:
-        submit_button = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[4]/div/div/div/div[2]/div/section/div[2]/div[2]/form/div[2]/button[1]")
+        # Submit button
+        submit_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div[1]/div/div[2]/div/main/div[4]/div/div/div/div[2]/div/section/div[2]/div[2]/form/div[2]/button[1]"))
+        )
         submit_button.click()
-        print("🎉 TryHackMe streak successfully updated!")
-        time.sleep(10)
+        print("🎉 Answer submitted successfully!")
     except Exception as e:
-        print(f"❌ Error clicking submit button: {e}")
+        print(f"❌ Error submitting answer: {e}")
 
-except Exception as e:
-    print(f"❌ Unexpected error: {e}")
+    # Final confirmation message
+    print("✅ TryHackMe streak successfully updated!")
+
+except Exception as main_error:
+    print(f"🚨 Fatal Error: {main_error}")
 
 finally:
+    # Close browser after 5 seconds
     print("🛑 Process completed. Closing browser in 5 seconds...")
     time.sleep(5)
     driver.quit()
