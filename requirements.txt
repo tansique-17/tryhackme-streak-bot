@@ -1,3 +1,2 @@
 selenium
-pickle
-time
+webdriver-manager
