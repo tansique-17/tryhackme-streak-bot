@@ -23,19 +23,19 @@ jobs:
 
       - name: 🔍 Print Python & Pip Cache Paths
         run: |
-          echo "Python site packages:"
+          echo "🔹 Python site packages:"
           python -m site
           
-          echo "Pip cache directory:"
-          python -c "import pip; print(pip.__path__)"
-          
-          echo "User base directory:"
+          echo "🔹 Pip cache directory:"
+          python -c "import os; import pip; print(os.path.expanduser('~/.cache/pip'))"
+
+          echo "🔹 User base directory:"
           python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
 
       - name: 🔍 Print Playwright Cache Path
         run: |
-          echo "Checking Playwright directory..."
-          ls -R C:\Users\runneradmin\AppData\Local\ms-playwright
+          echo "🔹 Playwright cache directory:"
+          playwright cache-dir
 
       - name: 🔍 Print Environment Variables
         shell: pwsh
