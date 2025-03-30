@@ -55,11 +55,13 @@ jobs:
           curl -H "Content-Type: application/json" \
           -X POST "${{ vars.DISCORD_WEBHOOK_URL }}" \
           -d "{\"username\": \"THM Bot\", \"content\": \"✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Current Streak: $STREAK days\"}"
-     
+                
       - name: 📢 Send Slack Notification
         if: success()
+        shell: pwsh
         run: |
-          STREAK=$(cat streak.txt)
-          curl -X POST -H 'Content-type: application/json' --data \
-          "{\"text\": \"✅ *TryHackMe Streak Bot:* Task completed successfully! 🔥 *Current Streak:* $STREAK days\"}" \
-          "${{ vars.SLACK_WEBHOOK_URL }}"
+          $streakCount = Get-Content streak.txt
+          $payload = @{
+            text = "✅ *TryHackMe Streak Bot:* Task completed successfully! 🔥 *Current Streak:* $streakCount days"
+          } | ConvertTo-Json -Compress
+          Invoke-RestMethod -Uri "${{ vars.SLACK_WEBHOOK_URL }}" -Method Post -Body $payload -ContentType "application/json"
