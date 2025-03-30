@@ -27,16 +27,28 @@ jobs:
           python -m site
           
           echo "🔹 Pip cache directory:"
-          python -c "import os; import pip; print(os.path.expanduser('~/.cache/pip'))"
-
+          python -c "import os; import pip; print(os.path.expanduser(os.path.join('~', '.cache', 'pip')))"
+          
           echo "🔹 User base directory:"
           python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
 
       - name: 🔍 Print Playwright Cache Path
         run: |
           echo "🔹 Playwright cache directory:"
-          playwright cache-dir
+          playwright cache-dir || echo "Playwright cache directory not found!"
 
       - name: 🔍 Print Environment Variables
         shell: pwsh
         run: Get-ChildItem Env:
+
+      - name: 🔍 List Python & Playwright Directories
+        shell: pwsh
+        run: |
+          echo "🔹 Python Installed Packages Directory:"
+          Get-ChildItem -Path (python -c "import sysconfig; print(sysconfig.get_path('purelib'))") -Recurse
+          
+          echo "🔹 Pip Cache Directory:"
+          Get-ChildItem -Path $HOME\.cache\pip -Recurse -ErrorAction SilentlyContinue
+
+          echo "🔹 Playwright Installation Directory:"
+          Get-ChildItem -Path "C:\Users\runneradmin\AppData\Local\ms-playwright" -Recurse -ErrorAction SilentlyContinue
