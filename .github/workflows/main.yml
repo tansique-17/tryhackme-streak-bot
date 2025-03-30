@@ -33,3 +33,10 @@ jobs:
         with:
           name: playwright-debug-logs
           path: playwright-log.txt
+
+      - name: ✅ Send Telegram Notification on Success
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot7610301725:AAEyiyhRziyY_ughm3UQXq1ajK1E8GKNt58/sendMessage" \
+          -d chat_id=1147529081 \
+          -d text="✅ TryHackMe Streak Bot: Task completed successfully!"
