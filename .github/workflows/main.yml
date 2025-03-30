@@ -17,14 +17,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            C:\Users\runneradmin\AppData\Local\pip\Cache
-            C:\Users\runneradmin\AppData\Local\ms-playwright
+            ~\AppData\Local\pip\Cache
+            ~\AppData\Local\ms-playwright
           key: windows-playwright-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            windows-playwright-${{ runner.os }}-
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11'  # Adjust based on your script’s requirement
 
       - name: 📥 Install dependencies
         run: |
@@ -32,11 +34,11 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps
 
+      - name: 🔄 Set Windows to UTF-8 (fix emoji issues)
+        run: chcp 65001
+
       - name: 🚀 Run TryHackMe Playwright script
-        run: |
-          chcp 65001  # Set Windows to UTF-8 (for emoji support)
-          python thm.py
-        continue-on-error: true  # Prevents full failure on minor errors
+        run: python thm.py
 
       - name: 📤 Upload Playwright debug logs (if failed)
         if: failure()
