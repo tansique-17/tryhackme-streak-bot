@@ -48,7 +48,7 @@ jobs:
         shell: pwsh
         run: |
           $streakCount = "${{ env.streak_count }}"
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ vars.TELEGRAM_BOT_TOKEN }}/sendMessage" `
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" `
             -Method Post `
             -Body @{ chat_id = "1147529081"; text = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakCount days" }
 
@@ -58,7 +58,7 @@ jobs:
         run: |
           STREAK=$(cat streak.txt)
           curl -H "Content-Type: application/json" \
-          -X POST "${{ vars.DISCORD_WEBHOOK_URL }}" \
+          -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
           -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK days\"}"
 
       - name: 📢 Send Slack Notification
@@ -69,4 +69,4 @@ jobs:
           $payload = @{
             text = "✅ *TryHackMe Streak Bot:* Task completed successfully! 🔥 *Current Streak:* $streakCount days"
           } | ConvertTo-Json -Compress
-          Invoke-RestMethod -Uri "${{ vars.SLACK_WEBHOOK_URL }}" -Method Post -Body $payload -ContentType "application/json"
+          Invoke-RestMethod -Uri "${{ secrets.SLACK_WEBHOOK_URL }}" -Method Post -Body $payload -ContentType "application/json"
