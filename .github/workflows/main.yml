@@ -1,28 +1,28 @@
-name: Playwright Automation
+name: TryHackMe Automation
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"  # Runs every day at midnight UTC
+  workflow_dispatch:  # Allows manual execution
 
 jobs:
-  run-script:
+  run-automation:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set Up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+          cache: "pip"  # Cache dependencies
 
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          pip install playwright
-          playwright install --with-deps  # Ensures browsers and dependencies are installed
+          playwright install --with-deps  # Install Playwright + dependencies (cached)
 
       - name: Run Playwright Script
-        run: python thm.py
+        run: python your_script.py
