@@ -25,4 +25,4 @@ jobs:
           playwright install --with-deps  # Install Playwright + dependencies (cached)
 
       - name: Run Playwright Script
-        run: python your_script.py
+        run: python thm .py
