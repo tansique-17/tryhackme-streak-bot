@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 import pickle
 import time
+import os
 
 # Constants
 COOKIE_FILE = "tryhackme_cookies.pkl"
@@ -9,71 +10,79 @@ ANSWER = "flag{connection_verified}"
 
 # Start Playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(headless=True)  # Change to False for debugging locally
     context = browser.new_context()
     page = context.new_page()
 
     print("Opening TryHackMe...")
     page.goto("https://tryhackme.com")
-    time.sleep(5)
+    page.wait_for_load_state("networkidle")
 
-    # Load saved cookies
-    print("Loading cookies...")
-    with open(COOKIE_FILE, "rb") as f:
-        cookies = pickle.load(f)
-        context.add_cookies(cookies)
+    # Load cookies
+    if os.path.exists(COOKIE_FILE):
+        print("Loading cookies...")
+        with open(COOKIE_FILE, "rb") as f:
+            cookies = pickle.load(f)
+            context.add_cookies(cookies)
+    else:
+        print("No cookies found! Logging in manually required.")
+        page.goto("https://tryhackme.com/login")
+        input("Press Enter after logging in manually...")
+        pickle.dump(context.cookies(), open(COOKIE_FILE, "wb"))
 
     # Refresh page to apply session
     page.goto("https://tryhackme.com/dashboard")
+    page.wait_for_load_state("networkidle")
     time.sleep(5)
 
-    # Step 2: Open the tutorial room
-    print("Opening the tutorial room...")
+    # Open room
+    print("Opening tutorial room...")
     page.goto(ROOM_URL)
-    time.sleep(10)
+    page.wait_for_load_state("networkidle")
+    time.sleep(5)
 
-    # Step 3: Click the options button
-    try:
+    # Click Options Button
+    if page.locator("button:has-text('Options')").is_visible():
         page.click("button:has-text('Options')")
-        time.sleep(3)
         print("Options menu opened!")
-    except:
-        print("Error clicking options button")
+        time.sleep(3)
+    else:
+        print("Options button NOT found!")
 
-    # Step 4: Click Reset Room Button
-    try:
+    # Click Reset Room Button
+    if page.locator("text=Reset Progress").is_visible():
         page.click("text=Reset Progress")
         print("Room reset button clicked!")
         time.sleep(3)
-    except:
-        print("Could not find the reset button. Skipping reset...")
+    else:
+        print("Reset button NOT found!")
 
-    # Step 5: Confirm Reset
-    try:
+    # Confirm Reset
+    if page.locator("button:has-text('Yes')").is_visible():
         page.click("button:has-text('Yes')")
         print("Room reset confirmed!")
         time.sleep(10)
-    except:
-        print("Could not confirm reset. Check manually.")
+    else:
+        print("Reset confirmation button NOT found!")
 
-    # Step 6: Enter the answer
-    try:
-        input_field = page.locator("input[data-testid='answer-field']")
-        input_field.wait_for(timeout=5000)  # Ensure element is loaded
+    # Enter Answer
+    input_field = page.locator("input[data-testid='answer-field']")
+    if input_field.is_visible():
         input_field.click()
         input_field.fill(ANSWER)
-        print("Answer entered!")
+        print(f"Entered Answer: {input_field.input_value()}")
         time.sleep(3)
-    except Exception as e:
-        print(f"Error finding answer input field: {e}")
+    else:
+        print("Answer input field NOT found!")
 
-    # Step 7: Click Submit Button
-    try:
-        page.click("button:has-text('Submit')")
-        print("TryHackMe streak successfully updated!")
+    # Submit Answer
+    submit_button = page.locator("button:has-text('Submit')")
+    if submit_button.is_visible():
+        submit_button.click()
+        print("Submit button clicked!")
         time.sleep(10)
-    except:
-        print("Error clicking submit button")
+    else:
+        print("Submit button NOT found!")
 
     print("Process completed. Closing browser...")
     browser.close()
