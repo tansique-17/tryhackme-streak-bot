@@ -46,7 +46,9 @@ jobs:
 
       - name: 🔍 Print Environment Variables
         shell: pwsh
-        run: Get-ChildItem Env:
+        run: |
+          echo "🔹 Listing all environment variables:"
+          Get-ChildItem Env:
 
       - name: 🔍 List Python & Playwright Directories
         shell: pwsh
