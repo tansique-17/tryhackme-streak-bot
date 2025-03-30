@@ -13,18 +13,10 @@ jobs:
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📦 Restore Python & Playwright cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            C:\Users\runneradmin\AppData\Local\pip\Cache
-            C:\Users\runneradmin\AppData\Local\ms-playwright
-          key: windows-playwright-${{ runner.os }}-v1-${{ hashFiles('requirements.txt') }}
-
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11'  # Adjust based on your script’s requirement
 
       - name: 📥 Install dependencies
         run: |
@@ -32,13 +24,12 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps
 
-      - name: 🚀 Run TryHackMe Playwright script
-        run: python thm.py
+      - name: 🚀 Run TryHackMe Playwright script with Debugging
+        run: python thm.py 2>&1 | tee playwright-log.txt
 
-      - name: 📤 Upload Playwright debug logs (if failed)
+      - name: 📤 Upload Debug Logs
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-debug-logs
           path: playwright-log.txt
-
