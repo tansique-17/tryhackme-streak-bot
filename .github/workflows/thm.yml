@@ -46,3 +46,12 @@ jobs:
           Invoke-RestMethod -Uri "https://api.telegram.org/bot7610301725:AAEyiyhRziyY_ughm3UQXq1ajK1E8GKNt58/sendMessage" `
             -Method Post `
             -Body @{ chat_id = "1147529081"; text = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakCount days" }
+
+      - name: 📢 Send Discord Notification with Streak Count
+        if: success()
+        shell: bash
+        run: |
+          STREAK=$(cat streak.txt)
+          curl -H "Content-Type: application/json" \
+          -X POST "https://discord.com/api/webhooks/1355056331920248952/hhx5KUYy2uzQUTdDFFJpBnoee6sKBGtrNTP8Vfw9lSupm_pe5c5V-aem5Xc2JtZ9hahI" \
+          -d "{\"username\": \"THM Bot\", \"content\": \"✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Current Streak: $STREAK days\"}"
