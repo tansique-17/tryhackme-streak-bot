@@ -16,7 +16,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Adjust based on your script’s requirement
+          python-version: '3.11'
 
       - name: 📥 Install dependencies
         run: |
@@ -34,9 +34,13 @@ jobs:
           name: playwright-debug-logs
           path: playwright-log.txt
 
+      - name: 📤 Read streak count
+        id: streak
+        run: echo "streak_count=$(cat streak.txt)" >> $GITHUB_ENV
+
       - name: ✅ Send Telegram Notification on Success
         if: success()
         run: |
           curl -s -X POST "https://api.telegram.org/bot7610301725:AAEyiyhRziyY_ughm3UQXq1ajK1E8GKNt58/sendMessage" \
           -d chat_id=1147529081 \
-          -d text="✅ TryHackMe Streak Bot: Task completed successfully!"
+          -d text="✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak Count: ${{ env.streak_count }} days!"
