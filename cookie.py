@@ -1,20 +1,33 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import time
+from playwright.sync_api import sync_playwright
 import pickle
+import os
 
-# Set up Selenium WebDriver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+# Constants
+COOKIE_DIR = "cookies"
+COOKIE_FILE = os.path.join(COOKIE_DIR, "tryhackme_cookies.pkl")
+LOGIN_URL = "https://tryhackme.com/login"
+DASHBOARD_URL = "https://tryhackme.com/dashboard"
 
-# Open TryHackMe login page
-driver.get("https://tryhackme.com/login")
-time.sleep(60)  # Wait for you to manually log in and solve CAPTCHA
+# Ensure the cookies directory exists
+os.makedirs(COOKIE_DIR, exist_ok=True)
 
-# Save cookies
-cookies = driver.get_cookies()
-with open("tryhackme_cookies.pkl", "wb") as f:
-    pickle.dump(cookies, f)
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=False)  # Open browser with UI
+    context = browser.new_context()
+    page = context.new_page()
 
-print("✅ Cookies saved as tryhackme_cookies.pkl!")
-driver.quit()
+    print("🔄 Opening TryHackMe login page...")
+    page.goto(LOGIN_URL)
+
+    # Wait until login is detected (when redirected to the dashboard)
+    print("⏳ Waiting for login completion...")
+    page.wait_for_url(DASHBOARD_URL, timeout=120000)  # 2-minute timeout for manual login
+
+    # Save cookies in .pkl format inside "cookies" directory
+    cookies = context.cookies()
+    with open(COOKIE_FILE, "wb") as f:
+        pickle.dump(cookies, f)
+
+    print(f"✅ Login detected! Cookies saved at: {COOKIE_FILE}")
+
+    browser.close()
