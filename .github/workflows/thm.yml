@@ -54,8 +54,8 @@ jobs:
           STREAK=$(cat streak.txt)
           curl -H "Content-Type: application/json" \
           -X POST "${{ vars.DISCORD_WEBHOOK_URL }}" \
-          -d "{\"username\": \"THM Bot\", \"content\": \"✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Current Streak: $STREAK days\"}"
-                
+          -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK days\"}"
+
       - name: 📢 Send Slack Notification
         if: success()
         shell: pwsh
