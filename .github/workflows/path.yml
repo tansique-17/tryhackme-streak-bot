@@ -22,20 +22,26 @@ jobs:
           playwright install --with-deps
 
       - name: 🔍 Print Python & Pip Cache Paths
+        shell: bash
         run: |
           echo "🔹 Python site packages:"
           python -m site
-          
+
           echo "🔹 Pip cache directory:"
-          python -c "import os; import pip; print(os.path.expanduser(os.path.join('~', '.cache', 'pip')))"
+          python -c "import os; print(os.path.expanduser(os.path.join('~', '.cache', 'pip')))"
           
           echo "🔹 User base directory:"
-          python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
+          python -c "import sysconfig; print(sysconfig.get_path('purelib')))"
 
       - name: 🔍 Print Playwright Cache Path
+        shell: bash
         run: |
-          echo "🔹 Playwright cache directory:"
-          playwright cache-dir || echo "Playwright cache directory not found!"
+          echo "🔹 Checking Playwright installation..."
+          if command -v playwright &> /dev/null; then
+            playwright cache-dir
+          else
+            echo "⚠️ Playwright is not installed!"
+          fi
 
       - name: 🔍 Print Environment Variables
         shell: pwsh
@@ -45,10 +51,11 @@ jobs:
         shell: pwsh
         run: |
           echo "🔹 Python Installed Packages Directory:"
-          Get-ChildItem -Path (python -c "import sysconfig; print(sysconfig.get_path('purelib'))") -Recurse
-          
+          $pythonPath = python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
+          Get-ChildItem -Path $pythonPath -Recurse -ErrorAction SilentlyContinue
+
           echo "🔹 Pip Cache Directory:"
-          Get-ChildItem -Path $HOME\.cache\pip -Recurse -ErrorAction SilentlyContinue
+          Get-ChildItem -Path "$HOME\.cache\pip" -Recurse -ErrorAction SilentlyContinue
 
           echo "🔹 Playwright Installation Directory:"
           Get-ChildItem -Path "C:\Users\runneradmin\AppData\Local\ms-playwright" -Recurse -ErrorAction SilentlyContinue
