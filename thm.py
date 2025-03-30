@@ -6,47 +6,40 @@ import time
 COOKIE_FILE = "tryhackme_cookies.pkl"
 ROOM_URL = "https://tryhackme.com/room/tutorial"
 ANSWER = "flag{connection_verified}"
-STREAK_FILE = "streak.txt"
 
-def get_streak(page):
-    """Attempts to fetch the streak count using XPath first, then falls back to class selector."""
+def fetch_streak(page):
+    """Fetch TryHackMe streak count."""
     try:
         print("Fetching updated streak count...")
 
         # Try XPath first
-        streak_element = page.locator("//body/div[1]/div[1]/div/div[2]/div/div[1]/header/div/div[2]/div/button[2]/p")
-        streak_element.wait_for(timeout=5000)
-        streak_text = streak_element.inner_text().strip()
-        print(f"Streak fetched via XPath: {streak_text}")
-        return streak_text
-
-    except:
-        print("XPath failed, trying class-based locator...")
-
-        try:
-            # Fall back to class name selector
-            streak_element = page.locator("p.sc-bXWnss.bnzZjc")
-            streak_element.wait_for(timeout=5000)
-            streak_text = streak_element.inner_text().strip()
-            print(f"Streak fetched via class selector: {streak_text}")
+        streak_xpath = page.locator("xpath=/html/body/div[1]/div[1]/div/div[2]/div/div[1]/header/div/div[2]/div/button[2]/p")
+        if streak_xpath.count() > 0:
+            streak_text = streak_xpath.first.inner_text().strip()
+            print(f"Streak fetched via XPath: {streak_text}")
             return streak_text
 
-        except Exception as e:
-            print(f"Error fetching streak count: {e}")
-            return "0"  # Default fallback
+        # If XPath fails, try class-based locator (ensuring it picks the FIRST element)
+        print("XPath failed, trying class-based locator...")
+        streak_element = page.locator("p.sc-bXWnss.bnzZjc").first  # Picks only the first match
+        streak_text = streak_element.inner_text().strip()
+        print(f"Streak fetched via class locator: {streak_text}")
+        return streak_text
+
+    except Exception as e:
+        print(f"Error fetching streak count: {e}")
+        return "0"
 
 # Start Playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)  # Headless mode for GitHub Actions
+    browser = p.chromium.launch(headless=True)
     context = browser.new_context()
     page = context.new_page()
 
     print("Opening TryHackMe...")
-
-    # Load TryHackMe website
     page.goto("https://tryhackme.com", wait_until="domcontentloaded", timeout=60000)
-
-    # Load cookies for authentication
+    
+    # Load saved cookies
     print("Loading cookies...")
     try:
         with open(COOKIE_FILE, "rb") as f:
@@ -55,7 +48,7 @@ with sync_playwright() as p:
     except Exception as e:
         print(f"Error loading cookies: {e}")
 
-    # Refresh to apply session
+    # Refresh dashboard to apply session
     page.goto("https://tryhackme.com/dashboard", timeout=60000)
     time.sleep(5)
 
@@ -64,7 +57,7 @@ with sync_playwright() as p:
     page.goto(ROOM_URL, timeout=60000)
     time.sleep(10)
 
-    # Click the "Options" button
+    # Click Options Button
     try:
         page.click("button:has-text('Options')")
         time.sleep(3)
@@ -72,7 +65,7 @@ with sync_playwright() as p:
     except:
         print("Error clicking options button")
 
-    # Click "Reset Progress" (if available)
+    # Click Reset Room
     try:
         page.click("text=Reset Progress")
         print("Room reset button clicked!")
@@ -80,7 +73,7 @@ with sync_playwright() as p:
     except:
         print("Could not find the reset button. Skipping reset...")
 
-    # Confirm reset
+    # Confirm Reset
     try:
         page.click("button:has-text('Yes')")
         print("Room reset confirmed!")
@@ -91,7 +84,7 @@ with sync_playwright() as p:
     # Enter the answer
     try:
         input_field = page.locator("input[data-testid='answer-field']")
-        input_field.wait_for(timeout=10000)  # Ensure element is loaded
+        input_field.wait_for(timeout=10000)
         input_field.click()
         input_field.fill(ANSWER)
         print("Answer entered!")
@@ -99,19 +92,19 @@ with sync_playwright() as p:
     except Exception as e:
         print(f"Error finding answer input field: {e}")
 
-    # Click "Submit"
+    # Click Submit Button
     try:
         page.click("button:has-text('Submit')")
-        print("TryHackMe streak successfully updated!")
+        print("TryHackMe streak updated!")
         time.sleep(10)
     except:
         print("Error clicking submit button")
 
-    # Fetch and Save Streak Count
-    streak_text = get_streak(page)
-    with open(STREAK_FILE, "w") as f:
-        f.write(streak_text)
-    print(f"Streak count saved: {streak_text}")
+    # Fetch and save streak count
+    streak_count = fetch_streak(page)
+    with open("streak.txt", "w") as f:
+        f.write(streak_count)
+    print(f"Streak count saved: {streak_count}")
 
     print("Process completed. Closing browser...")
     browser.close()
