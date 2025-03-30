@@ -27,7 +27,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip --no-cache-dir
           pip install -r requirements.txt --no-cache-dir
-          playwright install --with-deps --force
+          playwright install chromium --with-deps --force
 
       - name: 🚀 Run TryHackMe Playwright script
         run: python thm.py 2>&1 | tee playwright-log.txt
