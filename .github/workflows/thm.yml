@@ -38,20 +38,28 @@ jobs:
         shell: pwsh
         run: echo "streak_count=$(Get-Content streak.txt)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: ✅ Send Telegram Notification on Success
+      - name: ✅ Send Telegram Notification
         if: success()
         shell: pwsh
         run: |
           $streakCount = "${{ env.streak_count }}"
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot7610301725:AAEyiyhRziyY_ughm3UQXq1ajK1E8GKNt58/sendMessage" `
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ vars.TELEGRAM_BOT_TOKEN }}/sendMessage" `
             -Method Post `
             -Body @{ chat_id = "1147529081"; text = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakCount days" }
 
-      - name: 📢 Send Discord Notification with Streak Count
+      - name: 📢 Send Discord Notification
         if: success()
         shell: bash
         run: |
           STREAK=$(cat streak.txt)
           curl -H "Content-Type: application/json" \
-          -X POST "https://discord.com/api/webhooks/1355056331920248952/hhx5KUYy2uzQUTdDFFJpBnoee6sKBGtrNTP8Vfw9lSupm_pe5c5V-aem5Xc2JtZ9hahI" \
+          -X POST "${{ vars.DISCORD_WEBHOOK_URL }}" \
           -d "{\"username\": \"THM Bot\", \"content\": \"✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Current Streak: $STREAK days\"}"
+     
+      - name: 📢 Send Slack Notification
+        if: success()
+        run: |
+          STREAK=$(cat streak.txt)
+          curl -X POST -H 'Content-type: application/json' --data \
+          "{\"text\": \"✅ *TryHackMe Streak Bot:* Task completed successfully! 🔥 *Current Streak:* $STREAK days\"}" \
+          "${{ vars.SLACK_WEBHOOK_URL }}"
