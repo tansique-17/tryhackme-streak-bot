@@ -2,7 +2,7 @@ name: Daily TryHackMe Automation
 
 on:
   schedule:
-    - cron: '50 14 * * *'  # Runs every day at midnight UTC
+    - cron: '10 15 * * *'  # Runs every day at midnight UTC
   workflow_dispatch:
 
 jobs:
