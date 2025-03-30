@@ -29,9 +29,9 @@ jobs:
 
           echo "🔹 Pip cache directory:"
           python -c "import os; print(os.path.expanduser(os.path.join('~', '.cache', 'pip')))"
-          
+
           echo "🔹 User base directory:"
-          python -c "import sysconfig; print(sysconfig.get_path('purelib')))"
+          python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
 
       - name: 🔍 Print Playwright Cache Path
         shell: bash
