@@ -26,50 +26,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Print Python Details
+      - name: 🔍 Ensure `pytest` is installed
         run: |
-          echo "🔹 Python Version:"
-          python --version
-          echo "🔹 Installed Packages:"
-          pip list
+          python -m pip install pytest
+          echo "✅ Installed pytest version:"
+          python -m pytest --version
 
-      - name: Print Pip Cache Directory
+      - name: 🔧 Add Python Scripts Directory to PATH
         run: |
-          echo "🔹 Pip cache directory:"
-          python -c "import os; print(os.path.expanduser(os.path.join('~', '.cache', 'pip')))"
+          echo "🔹 Adding Python scripts directory to PATH..."
+          echo "$env:USERPROFILE\AppData\Local\Programs\Python\Python311\Scripts" >> $env:GITHUB_PATH
+          echo "$env:USERPROFILE\.local\bin" >> $env:GITHUB_PATH
 
-      - name: Print Python User Base Directory
-        run: |
-          echo "🔹 User base directory:"
-          python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
-
-      - name: Print Environment Variables
+      - name: 🔍 Check Environment Variables
         shell: pwsh
         run: |
-          echo "🔹 Environment Variables:"
           Get-ChildItem Env:
 
-      - name: 🔍 Check Playwright Installation
-        shell: pwsh
-        run: |
-          echo "🔹 Checking Playwright installation..."
-          if (Get-Command playwright -ErrorAction SilentlyContinue) {
-            Write-Host "✅ Playwright is installed."
-          } else {
-            Write-Host "⚠️ Playwright is not installed!"
-          }
-
-      - name: 🔍 Print Playwright Cache Path
-        shell: pwsh
-        run: |
-          echo "🔹 Checking Playwright cache directory..."
-          $playwrightCache = "$env:USERPROFILE\AppData\Local\ms-playwright"
-          if (Test-Path $playwrightCache) {
-            Write-Host "✅ Playwright cache found at: $playwrightCache"
-            Get-ChildItem -Path $playwrightCache
-          } else {
-            Write-Host "⚠️ No Playwright cache directory found!"
-          }
-
       - name: Run Tests
-        run: pytest
+        shell: pwsh
+        run: |
+          python -m pytest
