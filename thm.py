@@ -71,4 +71,32 @@ with sync_playwright() as p:
         print("Room reset confirmed!")
         time.sleep(10)
     except:
-        print("
+        print("Could not confirm reset. Check manually.")
+
+    # Enter the answer
+    try:
+        input_field = page.locator("input[data-testid='answer-field']")
+        input_field.wait_for(timeout=10000)
+        input_field.click()
+        input_field.fill(ANSWER)
+        print("Answer entered!")
+        time.sleep(3)
+    except Exception as e:
+        print(f"Error finding answer input field: {e}")
+
+    # Click Submit Button
+    try:
+        page.click("button:has-text('Submit')")
+        print("TryHackMe streak updated!")
+        time.sleep(10)
+    except:
+        print("Error clicking submit button")
+
+    # Fetch and save streak count
+    streak_count = fetch_streak(page)
+    with open("streak.txt", "w") as f:
+        f.write(streak_count)
+    print(f"Streak count saved: {streak_count}")
+
+    print("Process completed. Closing browser...")
+    browser.close()
