@@ -9,7 +9,7 @@ ANSWER = "flag{connection_verified}"
 
 # Start Playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)  # Run headless for GitHub Actions
+    browser = p.chromium.launch(headless=False)  # Set to True to run headless
     context = browser.new_context()
     page = context.new_page()
 
@@ -42,7 +42,7 @@ with sync_playwright() as p:
 
     # Step 4: Click Reset Room Button
     try:
-        page.click("text=Reset Room")
+        page.click("text=Reset Progress")
         print("✅ Room reset button clicked!")
         time.sleep(3)
     except:
@@ -58,17 +58,20 @@ with sync_playwright() as p:
 
     # Step 6: Enter the answer
     try:
-        page.fill("input[type='text']", ANSWER)
-        time.sleep(3)
+        input_field = page.locator("input[data-testid='answer-field']")
+        input_field.wait_for(timeout=5000)  # Ensure element is loaded
+        input_field.click()
+        input_field.fill(ANSWER)
         print("📝 Answer entered!")
-    except:
-        print("❌ Error finding answer input field")
+        time.sleep(3)
+    except Exception as e:
+        print(f"❌ Error finding answer input field: {e}")
 
     # Step 7: Click Submit Button
     try:
         page.click("button:has-text('Submit')")
         print("🎉 TryHackMe streak successfully updated!")
-        time.sleep(30)
+        time.sleep(10)
     except:
         print("❌ Error clicking submit button")
 
