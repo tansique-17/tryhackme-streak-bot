@@ -1,10 +1,11 @@
 from playwright.sync_api import sync_playwright
 import pickle
 import os
+import base64
 
 # Constants
 COOKIE_DIR = "cookies"
-COOKIE_FILE = os.path.join(COOKIE_DIR, "tryhackme_cookies.pkl")
+COOKIE_FILE = os.path.join(COOKIE_DIR, "tryhackme_cookies.txt")
 LOGIN_URL = "https://tryhackme.com/login"
 DASHBOARD_URL = "https://tryhackme.com/dashboard"
 
@@ -23,11 +24,15 @@ with sync_playwright() as p:
     print("⏳ Waiting for login completion...")
     page.wait_for_url(DASHBOARD_URL, timeout=120000)  # 2-minute timeout for manual login
 
-    # Save cookies in .pkl format inside "cookies" directory
+    # Save cookies and encode to base64
     cookies = context.cookies()
-    with open(COOKIE_FILE, "wb") as f:
-        pickle.dump(cookies, f)
+    cookies_pickled = pickle.dumps(cookies)  # Pickle cookies
+    cookies_base64 = base64.b64encode(cookies_pickled).decode('utf-8')  # Base64 encode the pickled cookies
 
-    print(f"✅ Login detected! Cookies saved at: {COOKIE_FILE}")
+    # Save the base64 encoded cookies to a .txt file
+    with open(COOKIE_FILE, "w") as f:
+        f.write(cookies_base64)
+
+    print(f"✅ Login detected! Cookies saved as base64 in: {COOKIE_FILE}")
 
     browser.close()
