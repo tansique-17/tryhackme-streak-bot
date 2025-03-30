@@ -40,7 +40,8 @@ jobs:
           if command -v playwright &> /dev/null; then
             playwright cache-dir
           else
-            echo "⚠️ Playwright is not installed!"
+            echo "⚠️ Playwright is not installed! Checking manually..."
+            ls -R $HOME/.cache/ms-playwright || echo "No Playwright cache found."
           fi
 
       - name: 🔍 Print Environment Variables
