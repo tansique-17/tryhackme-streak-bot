@@ -21,8 +21,8 @@ jobs:
       - name: 📥 Install dependencies (only if needed)
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          playwright install --with-deps
+          pip install --no-cache-dir -r requirements.txt  # Use --no-cache-dir to avoid caching during install
+          playwright install --with-deps chromium  # Install only Chromium browser for faster setup
 
       - name: 🚀 Run TryHackMe Playwright script
         run: python thm.py 2>&1 | tee playwright-log.txt
