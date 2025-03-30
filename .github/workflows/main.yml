@@ -17,8 +17,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~\AppData\Local\pip\Cache
-            ~\AppData\Local\ms-playwright
+            C:\Users\runneradmin\AppData\Local\pip\Cache
+            C:\Users\runneradmin\AppData\Local\ms-playwright
           key: windows-playwright-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
 
       - name: 🐍 Set up Python
