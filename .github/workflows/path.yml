@@ -1,0 +1,42 @@
+name: Debug Cache Paths
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug-paths:
+    runs-on: windows-latest
+    steps:
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📥 Install Dependencies (Without Cache)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps
+
+      - name: 🔍 Print Python & Pip Cache Paths
+        run: |
+          echo "Python site packages:"
+          python -m site
+          
+          echo "Pip cache directory:"
+          python -c "import pip; print(pip.__path__)"
+          
+          echo "User base directory:"
+          python -c "import sysconfig; print(sysconfig.get_path('purelib'))"
+
+      - name: 🔍 Print Playwright Cache Path
+        run: |
+          echo "Checking Playwright directory..."
+          ls -R C:\Users\runneradmin\AppData\Local\ms-playwright
+
+      - name: 🔍 Print Environment Variables
+        shell: pwsh
+        run: Get-ChildItem Env:
