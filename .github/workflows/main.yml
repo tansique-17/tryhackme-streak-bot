@@ -41,3 +41,4 @@ jobs:
         with:
           name: playwright-debug-logs
           path: playwright-log.txt
+
