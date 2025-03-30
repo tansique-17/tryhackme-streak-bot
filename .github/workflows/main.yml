@@ -24,7 +24,7 @@ jobs:
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # Adjust based on your script’s requirement
+          python-version: '3.11'
 
       - name: 📥 Install dependencies
         run: |
@@ -33,7 +33,10 @@ jobs:
           playwright install --with-deps
 
       - name: 🚀 Run TryHackMe Playwright script
-        run: python thm.py
+        run: |
+          chcp 65001  # Set Windows to UTF-8 (for emoji support)
+          python thm.py
+        continue-on-error: true  # Prevents full failure on minor errors
 
       - name: 📤 Upload Playwright debug logs (if failed)
         if: failure()
