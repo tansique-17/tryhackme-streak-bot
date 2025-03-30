@@ -21,7 +21,8 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          playwright install --with-deps
+          pip install playwright
+          playwright install --with-deps  # Ensures browsers and dependencies are installed
 
       - name: Run Playwright Script
-        run: python your_script.py
+        run: python thm.py
