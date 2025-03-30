@@ -12,16 +12,8 @@ def fetch_streak(page):
     try:
         print("Fetching updated streak count...")
 
-        # Try XPath first
-        streak_xpath = page.locator("xpath=/html/body/div[1]/div[1]/div/div[2]/div/div[1]/header/div/div[2]/div/button[2]/p")
-        if streak_xpath.count() > 0:
-            streak_text = streak_xpath.first.inner_text().strip()
-            print(f"Streak fetched via XPath: {streak_text}")
-            return streak_text
-
-        # If XPath fails, try class-based locator (ensuring it picks the FIRST element)
-        print("XPath failed, trying class-based locator...")
-        streak_element = page.locator("p.sc-bXWnss.bnzZjc").first  # Picks only the first match
+        # Use class-based locator (ensuring it picks the FIRST element)
+        streak_element = page.locator("p.sc-bXWnss.bnzZjc").first
         streak_text = streak_element.inner_text().strip()
         print(f"Streak fetched via class locator: {streak_text}")
         return streak_text
@@ -79,32 +71,4 @@ with sync_playwright() as p:
         print("Room reset confirmed!")
         time.sleep(10)
     except:
-        print("Could not confirm reset. Check manually.")
-
-    # Enter the answer
-    try:
-        input_field = page.locator("input[data-testid='answer-field']")
-        input_field.wait_for(timeout=10000)
-        input_field.click()
-        input_field.fill(ANSWER)
-        print("Answer entered!")
-        time.sleep(3)
-    except Exception as e:
-        print(f"Error finding answer input field: {e}")
-
-    # Click Submit Button
-    try:
-        page.click("button:has-text('Submit')")
-        print("TryHackMe streak updated!")
-        time.sleep(10)
-    except:
-        print("Error clicking submit button")
-
-    # Fetch and save streak count
-    streak_count = fetch_streak(page)
-    with open("streak.txt", "w") as f:
-        f.write(streak_count)
-    print(f"Streak count saved: {streak_count}")
-
-    print("Process completed. Closing browser...")
-    browser.close()
+        print("
