@@ -9,7 +9,7 @@ ANSWER = "flag{connection_verified}"
 
 # Start Playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)  # Set to True to run headless
+    browser = p.chromium.launch(headless=True)  # Set to True to run headless
     context = browser.new_context()
     page = context.new_page()
 
