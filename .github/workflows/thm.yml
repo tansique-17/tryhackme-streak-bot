@@ -76,7 +76,7 @@ jobs:
           STREAK=$(grep -oP "Streak: \K.*" streak.txt || echo "Unknown")
           curl -H "Content-Type: application/json" \
                -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-               -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK days\"}"
+               -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK \"}"
 
       # 💬 Slack Notifications (Badge + Summary)
       - name: 💬 Send Slack Notifications
