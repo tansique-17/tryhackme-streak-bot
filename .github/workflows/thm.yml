@@ -30,7 +30,7 @@ jobs:
           playwright install chromium --with-deps --force
 
       - name: 🚀 Run TryHackMe Playwright script
-        run: python thm.py
+        run: python thm.py 2>&1 | tee playwright-log.txt
 
       - name: 📤 Upload Debug Logs (if failed)
         if: failure()
@@ -44,10 +44,13 @@ jobs:
         if: success()
         shell: pwsh
         run: |
+          $chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          $bot_token = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
           $badge = Get-Content streak.txt -Raw
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" `
+
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot$bot_token/sendMessage" `
             -Method Post `
-            -Body @{ chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"; text = "$badge" } `
+            -Body @{ chat_id = $chat_id; text = $badge } `
             -ContentType "application/x-www-form-urlencoded"
 
       # ✅ Discord Notification with full profile badge
