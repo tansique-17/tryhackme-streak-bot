@@ -39,8 +39,8 @@ jobs:
           name: playwright-debug-logs
           path: playwright-log.txt
 
-      # ✅ Telegram Notification with full profile badge
-      - name: ✅ Send Telegram Notification
+      # ✅ Telegram Notifications (Badge + Summary)
+      - name: ✅ Send Telegram Notifications
         if: success()
         shell: pwsh
         run: |
@@ -53,21 +53,52 @@ jobs:
             -Body @{ chat_id = $chat_id; text = $badge } `
             -ContentType "application/x-www-form-urlencoded"
 
-      # ✅ Discord Notification with full profile badge
-      - name: 📢 Send Discord Notification
+          if ($badge -match "🔥 Streak: ([^\n]+)") {
+            $streakValue = $Matches[1]
+          } else {
+            $streakValue = "Unknown"
+          }
+
+          $summary = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakValue"
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot$bot_token/sendMessage" `
+            -Method Post `
+            -Body @{ chat_id = $chat_id; text = $summary } `
+            -ContentType "application/x-www-form-urlencoded"
+
+      # 📢 Discord Notifications (Badge + Summary)
+      - name: 📢 Send Discord Notifications
         if: success()
         shell: bash
         run: |
           BADGE=$(cat streak.txt | sed ':a;N;$!ba;s/\n/\\n/g')
-          curl -H "Content-Type: application/json" \
-          -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-          -d "{\"username\": \"THM Bot\", \"content\": \"$BADGE\"}"
+          STREAK=$(grep "🔥 Streak:" streak.txt | sed 's/.*🔥 Streak: //')
+          SUMMARY="✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $STREAK"
 
-      # ✅ Slack Notification with full profile badge
-      - name: 📢 Send Slack Notification
+          curl -H "Content-Type: application/json" \
+               -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+               -d "{\"username\": \"THM Bot\", \"content\": \"$BADGE\"}"
+
+          curl -H "Content-Type: application/json" \
+               -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+               -d "{\"username\": \"THM Bot\", \"content\": \"$SUMMARY\"}"
+
+      # 💬 Slack Notifications (Badge + Summary)
+      - name: 💬 Send Slack Notifications
         if: success()
         shell: pwsh
         run: |
           $badge = Get-Content streak.txt -Raw
-          $payload = @{ text = "$badge" } | ConvertTo-Json -Compress
-          Invoke-RestMethod -Uri "${{ secrets.SLACK_WEBHOOK_URL }}" -Method Post -Body $payload -ContentType "application/json"
+          $webhook = "${{ secrets.SLACK_WEBHOOK_URL }}"
+
+          $badgePayload = @{ text = "$badge" } | ConvertTo-Json -Compress
+          Invoke-RestMethod -Uri $webhook -Method Post -Body $badgePayload -ContentType "application/json"
+
+          if ($badge -match "🔥 Streak: ([^\n]+)") {
+            $streakValue = $Matches[1]
+          } else {
+            $streakValue = "Unknown"
+          }
+
+          $summary = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakValue"
+          $summaryPayload = @{ text = "$summary" } | ConvertTo-Json -Compress
+          Invoke-RestMethod -Uri $webhook -Method Post -Body $summaryPayload -ContentType "application/json"
