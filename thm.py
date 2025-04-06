@@ -1,6 +1,8 @@
 from playwright.sync_api import sync_playwright
+from bs4 import BeautifulSoup
 import pickle
 import time
+import re
 
 # Constants
 COOKIE_FILE = "tryhackme_cookies.pkl"
@@ -8,29 +10,48 @@ ROOM_URL = "https://tryhackme.com/room/tutorial"
 ANSWER = "flag{connection_verified}"
 
 def fetch_streak(page):
-    """Fetch TryHackMe streak count."""
+    """Fetch TryHackMe streak by searching full page HTML for 'X day streak'."""
     try:
-        print("Fetching updated streak count...")
+        print("Fetching updated streak count from full page...")
 
-        # Use class-based locator (ensuring it picks the FIRST element)
-        streak_element = page.locator("p.sc-bXWnss.bnzZjc").first
-        streak_text = streak_element.inner_text().strip()
-        print(f"Streak fetched via class locator: {streak_text}")
-        return streak_text
+        # Ensure we're on the dashboard page
+        page.goto("https://tryhackme.com/dashboard", timeout=60000)
+        page.wait_for_timeout(5000)
+
+        # Get full HTML content
+        full_html = page.content()
+
+        # Parse with BeautifulSoup
+        soup = BeautifulSoup(full_html, "html.parser")
+        body_text = soup.get_text(separator=' ', strip=True)
+
+        # Optional debug
+        # print("Page text:")
+        # print(body_text)
+
+        # Search for streak using regex
+        match = re.search(r'(\d+)\s+day(?:s)?\s+streak', body_text, re.IGNORECASE)
+        if match:
+            streak = match.group(1)
+            print(f"✅ Found streak: {streak} day streak")
+            return streak
+        else:
+            print("❌ Could not find 'X day streak' in page.")
+            return "0"
 
     except Exception as e:
-        print(f"Error fetching streak count: {e}")
+        print(f"⚠️ Error fetching streak: {e}")
         return "0"
 
 # Start Playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(headless=False)  # Set to True to run headless
     context = browser.new_context()
     page = context.new_page()
 
     print("Opening TryHackMe...")
     page.goto("https://tryhackme.com", wait_until="domcontentloaded", timeout=60000)
-    
+
     # Load saved cookies
     print("Loading cookies...")
     try:
@@ -87,16 +108,16 @@ with sync_playwright() as p:
     # Click Submit Button
     try:
         page.click("button:has-text('Submit')")
-        print("TryHackMe streak updated!")
+        print("Answer submitted!")
         time.sleep(10)
     except:
         print("Error clicking submit button")
 
-    # Fetch and save streak count
+    # Fetch and save streak
     streak_count = fetch_streak(page)
     with open("streak.txt", "w") as f:
         f.write(streak_count)
     print(f"Streak count saved: {streak_count}")
 
-    print("Process completed. Closing browser...")
+    print("Closing Playwright browser...")
     browser.close()
