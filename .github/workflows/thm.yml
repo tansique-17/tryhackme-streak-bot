@@ -2,7 +2,7 @@ name: Daily TryHackMe Automation
 
 on:
   schedule:
-    - cron: '0 */12 * * *'  # Runs every 12 hours UTC
+    - cron: '0 */6 * * *'  # Runs every 12 hours UTC
   workflow_dispatch:
 
 jobs:
@@ -70,7 +70,7 @@ jobs:
         if: success()
         shell: bash
         run: |
-          BADGE=$(cat streak.txt | sed ':a;N;$!ba;s/\n/\\n/g')
+          BADGE=$(cat streak.txt | sed ':a;N;$!ba;s/"/\\"/g; s/\n/\\n/g')
           STREAK=$(grep "🔥 Streak:" streak.txt | sed 's/.*🔥 Streak: //')
           SUMMARY="✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $STREAK"
 
