@@ -39,39 +39,18 @@ jobs:
           name: playwright-debug-logs
           path: playwright-log.txt
 
-      - name: 🔄 Read Profile Badge Info
-        id: badge
-        shell: pwsh
-        run: |
-          $lines = Get-Content streak.txt
-          $username = "👤 Username: Unknown"
-          $rank     = "🏅 Rank: Unknown"
-          $trophies = "🥇 Trophies: 0"
-          $streak   = "🔥 Streak: 0"
-          $awards   = "🎖️ Awards: 0"
-          $rooms    = "🚪 Rooms Completed: 0"
-
-          if ($lines.Length -ge 6) {
-            $username = $lines[0]
-            $rank     = $lines[1]
-            $trophies = $lines[2]
-            $streak   = $lines[3]
-            $awards   = $lines[4]
-            $rooms    = $lines[5]
-          }
-
-          echo "badge_summary=$username`n$rank`n$trophies`n$streak`n$awards`n$rooms" | Out-File -FilePath $env:GITHUB_ENV -Append
-
+      # ✅ Telegram Notification with full profile badge
       - name: ✅ Send Telegram Notification
         if: success()
         shell: pwsh
         run: |
-          $summary = "${{ env.badge_summary }}"
+          $badge = Get-Content streak.txt -Raw
           Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" `
             -Method Post `
-            -Body @{ chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"; text = "✅ *TryHackMe Streak Bot:* Task completed successfully!`n`n$summary" } `
+            -Body @{ chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"; text = "✅ *TryHackMe Streak Bot:* Task completed successfully!`n`n$badge" } `
             -ContentType "application/x-www-form-urlencoded"
 
+      # ✅ Discord Notification with full profile badge
       - name: 📢 Send Discord Notification
         if: success()
         shell: bash
@@ -81,6 +60,7 @@ jobs:
           -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
           -d "{\"username\": \"THM Bot\", \"content\": \"✅ **TryHackMe Streak Bot**: Task completed successfully!\\n\\n$BADGE\"}"
 
+      # ✅ Slack Notification with full profile badge
       - name: 📢 Send Slack Notification
         if: success()
         shell: pwsh
