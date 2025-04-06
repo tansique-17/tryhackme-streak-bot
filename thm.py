@@ -1,8 +1,15 @@
+import sys
 import requests
 import pickle
 import time
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
+
+# === Fix Unicode Encoding for Windows Terminals ===
+if sys.platform == "win32":
+    import os
+    os.system("")  # Enables ANSI/VT100 support in newer Windows terminals
+    sys.stdout.reconfigure(encoding='utf-8')
 
 # === CONFIGURATION ===
 COOKIE_FILE = "tryhackme_cookies.pkl"
@@ -13,7 +20,7 @@ url = "https://tryhackme.com/api/v2/badges/public-profile?userPublicId=1282671"
 # === Automate Room Reset & Flag Submission ===
 def automate_tryhackme():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)  # Set to True to run headless
+        browser = p.chromium.launch(headless=True)  # Set to False to see the browser
         context = browser.new_context()
         page = context.new_page()
 
@@ -60,24 +67,20 @@ def automate_tryhackme():
         print("🛑 Closing browser...")
         browser.close()
 
-
 # === Fetch and Print Profile Info from Badge API ===
 def fetch_badge_profile():
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Extract values
     username = soup.find("span", class_="user_name").text.strip()
     rank = soup.find("span", class_="rank-title").text.strip()
-
-    # Find all values under .details-text
     details = soup.find_all("span", class_="details-text")
+
     trophies = details[0].text.strip() if len(details) > 0 else None
     streak = details[1].text.strip() if len(details) > 1 else None
     awards = details[2].text.strip() if len(details) > 2 else None
     rooms_completed = details[3].text.strip() if len(details) > 3 else None
 
-    # Prepare the final badge output
     badge_output = (
         f"👤 Username: {username}\n"
         f"🏅 Rank: {rank}\n"
@@ -88,13 +91,10 @@ def fetch_badge_profile():
         f"✅ Done!"
     )
 
-    # Save to streak.txt
     with open("streak.txt", "w", encoding="utf-8") as f:
         f.write(badge_output)
 
-    # Also print it to console
     print(badge_output)
-
 
 # === MAIN ===
 if __name__ == "__main__":
