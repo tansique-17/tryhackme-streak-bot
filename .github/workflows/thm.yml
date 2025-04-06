@@ -2,7 +2,7 @@ name: Daily TryHackMe Automation
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Runs every 12 hours UTC
+    - cron: '0 */6 * * *'  # Runs every 6 hours UTC
   workflow_dispatch:
 
 jobs:
@@ -59,13 +59,13 @@ jobs:
             $streakValue = "Unknown"
           }
 
-          $summary = "TryHackMe Streak Bot: Task completed successfully! Streak: $streakValue"
+          $summary = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakValue"
           Invoke-RestMethod -Uri "https://api.telegram.org/bot$bot_token/sendMessage" `
             -Method Post `
             -Body @{ chat_id = $chat_id; text = $summary } `
             -ContentType "application/x-www-form-urlencoded"
 
-      # 📢 Discord Notifications (No emojis, plain text-safe)
+      # 📢 Discord Notifications (Only Streak Summary with Unicode Emojis)
       - name: 📢 Send Discord Notifications
         if: success()
         shell: bash
@@ -73,19 +73,12 @@ jobs:
           LANG: en_US.UTF-8
           LC_ALL: en_US.UTF-8
         run: |
-          BADGE=$(cat streak.txt | sed ':a;N;$!ba;s/"/\\"/g; s/\n/\\n/g')
           STREAK=$(grep -oP "Streak: \K.*" streak.txt || echo "Unknown")
-          SUMMARY="TryHackMe Streak Bot: Task completed successfully! Streak: $STREAK"
-
           curl -H "Content-Type: application/json" \
                -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-               -d "{\"username\": \"THM Bot\", \"content\": \"$BADGE\"}"
+               -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK days\"}"
 
-          curl -H "Content-Type: application/json" \
-               -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-               -d "{\"username\": \"THM Bot\", \"content\": \"$SUMMARY\"}"
-
-      # 💬 Slack Notifications (No emojis, safe formatting)
+      # 💬 Slack Notifications (Badge + Summary)
       - name: 💬 Send Slack Notifications
         if: success()
         shell: pwsh
@@ -102,6 +95,6 @@ jobs:
             $streakValue = "Unknown"
           }
 
-          $summary = "TryHackMe Streak Bot: Task completed successfully! Streak: $streakValue"
+          $summary = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakValue"
           $summaryPayload = @{ text = "$summary" } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri $webhook -Method Post -Body $summaryPayload -ContentType "application/json"
