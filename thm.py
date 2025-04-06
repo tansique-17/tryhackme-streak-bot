@@ -10,47 +10,44 @@ ROOM_URL = "https://tryhackme.com/room/tutorial"
 ANSWER = "flag{connection_verified}"
 
 def fetch_streak(page):
-    """Fetch TryHackMe streak by searching full page HTML for 'X day streak'."""
+    """Fetch TryHackMe streak by extracting only the header section."""
     try:
-        print("Fetching updated streak count from full page...")
+        print("Fetching updated streak count from header...")
 
-        # Ensure we're on the dashboard page
+        # Navigate to dashboard
         page.goto("https://tryhackme.com/dashboard", timeout=60000)
         page.wait_for_timeout(5000)
 
-        # Get full HTML content
-        full_html = page.content()
+        # Extract only the header HTML section
+        header_locator = page.locator("header").first
+        header_html = header_locator.inner_html()
 
         # Parse with BeautifulSoup
-        soup = BeautifulSoup(full_html, "html.parser")
-        body_text = soup.get_text(separator=' ', strip=True)
+        soup = BeautifulSoup(header_html, "html.parser")
+        header_text = soup.get_text(separator=' ', strip=True)
 
-        # Optional debug
-        # print("Page text:")
-        # print(body_text)
+        # Debug output
+        print("Header text preview:")
+        print(header_text)
 
-        # Search for streak using regex
-        match = re.search(r'(\d+)\s+day(?:s)?\s+streak', body_text, re.IGNORECASE)
+        # Use regex to find streak
+        match = re.search(r'(\d+)\s+day(?:s)?\s+streak', header_text, re.IGNORECASE)
         if match:
             streak = match.group(1)
-            print(f"✅ Found streak: {streak} day streak")
+            print(f"Found streak in header: {streak} day streak")
             return streak
         else:
-            print("❌ Could not find 'X day streak' in page.")
+            print("Could not find 'X day streak' in header.")
             return "0"
 
     except Exception as e:
-        print(f"⚠️ Error fetching streak: {e}")
+        print(f"Error fetching streak from header: {e}")
         return "0"
 
 # Start Playwright
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)  # Set to True to run headless
+    browser = p.chromium.launch(headless=True)
     context = browser.new_context()
-    page = context.new_page()
-
-    print("Opening TryHackMe...")
-    page.goto("https://tryhackme.com", wait_until="domcontentloaded", timeout=60000)
 
     # Load saved cookies
     print("Loading cookies...")
@@ -61,11 +58,12 @@ with sync_playwright() as p:
     except Exception as e:
         print(f"Error loading cookies: {e}")
 
-    # Refresh dashboard to apply session
+    page = context.new_page()
+
+    print("Opening TryHackMe...")
     page.goto("https://tryhackme.com/dashboard", timeout=60000)
     time.sleep(5)
 
-    # Open the tutorial room
     print("Opening the tutorial room...")
     page.goto(ROOM_URL, timeout=60000)
     time.sleep(10)
@@ -73,7 +71,7 @@ with sync_playwright() as p:
     # Click Options Button
     try:
         page.click("button:has-text('Options')")
-        time.sleep(3)
+        time.sleep(2)
         print("Options menu opened!")
     except:
         print("Error clicking options button")
@@ -82,7 +80,7 @@ with sync_playwright() as p:
     try:
         page.click("text=Reset Progress")
         print("Room reset button clicked!")
-        time.sleep(3)
+        time.sleep(2)
     except:
         print("Could not find the reset button. Skipping reset...")
 
@@ -90,7 +88,7 @@ with sync_playwright() as p:
     try:
         page.click("button:has-text('Yes')")
         print("Room reset confirmed!")
-        time.sleep(10)
+        time.sleep(5)
     except:
         print("Could not confirm reset. Check manually.")
 
@@ -101,7 +99,7 @@ with sync_playwright() as p:
         input_field.click()
         input_field.fill(ANSWER)
         print("Answer entered!")
-        time.sleep(3)
+        time.sleep(2)
     except Exception as e:
         print(f"Error finding answer input field: {e}")
 
@@ -109,11 +107,11 @@ with sync_playwright() as p:
     try:
         page.click("button:has-text('Submit')")
         print("Answer submitted!")
-        time.sleep(10)
+        time.sleep(5)
     except:
         print("Error clicking submit button")
 
-    # Fetch and save streak
+    # Fetch and save streak using header
     streak_count = fetch_streak(page)
     with open("streak.txt", "w") as f:
         f.write(streak_count)
