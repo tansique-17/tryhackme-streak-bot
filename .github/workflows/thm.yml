@@ -47,7 +47,7 @@ jobs:
           $badge = Get-Content streak.txt -Raw
           Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" `
             -Method Post `
-            -Body @{ chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"; text = "✅ *TryHackMe Streak Bot:* Task completed successfully!`n`n$badge" } `
+            -Body @{ chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"; text = "$badge" } `
             -ContentType "application/x-www-form-urlencoded"
 
       # ✅ Discord Notification with full profile badge
@@ -58,7 +58,7 @@ jobs:
           BADGE=$(cat streak.txt | sed ':a;N;$!ba;s/\n/\\n/g')
           curl -H "Content-Type: application/json" \
           -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-          -d "{\"username\": \"THM Bot\", \"content\": \"✅ **TryHackMe Streak Bot**: Task completed successfully!\\n\\n$BADGE\"}"
+          -d "{\"username\": \"THM Bot\", \"content\": \"$BADGE\"}"
 
       # ✅ Slack Notification with full profile badge
       - name: 📢 Send Slack Notification
@@ -66,5 +66,5 @@ jobs:
         shell: pwsh
         run: |
           $badge = Get-Content streak.txt -Raw
-          $payload = @{ text = "✅ *TryHackMe Streak Bot:* Task completed successfully!`n`n$badge" } | ConvertTo-Json -Compress
+          $payload = @{ text = "$badge" } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri "${{ secrets.SLACK_WEBHOOK_URL }}" -Method Post -Body $payload -ContentType "application/json"
