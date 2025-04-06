@@ -2,7 +2,7 @@ name: Daily TryHackMe Automation
 
 on:
   schedule:
-    - cron: '0 */12 * * *'  # Runs every day at midnight UTC
+    - cron: '0 */12 * * *'  # Runs every 12 hours UTC
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
           echo "${{ secrets.COOKIES_PKL }}" | base64 --decode > tryhackme_cookies.pkl
         shell: bash
 
-      - name: 📥 Install dependencies without cache
+      - name: 📥 Install dependencies
         run: |
           python -m pip install --upgrade pip --no-cache-dir
           pip install -r requirements.txt --no-cache-dir
@@ -50,7 +50,7 @@ jobs:
           $streakCount = "${{ env.streak_count }}"
           Invoke-RestMethod -Uri "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" `
             -Method Post `
-            -Body @{ chat_id = "1147529081"; text = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakCount days" }
+            -Body @{ chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"; text = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakCount days" }
 
       - name: 📢 Send Discord Notification
         if: success()
@@ -59,7 +59,7 @@ jobs:
           STREAK=$(cat streak.txt)
           curl -H "Content-Type: application/json" \
           -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-          -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK days\"}"
+          -d "{\"username\": \"THM Bot\", \"content\": \"✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Current Streak: $STREAK days\"}"
 
       - name: 📢 Send Slack Notification
         if: success()
