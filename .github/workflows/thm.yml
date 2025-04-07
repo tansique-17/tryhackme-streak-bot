@@ -2,7 +2,7 @@ name: Daily TryHackMe Automation
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Runs every 6 hours UTC
+    - cron: '0 0 * * *'  # Runs once daily at midnight UTC
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,13 @@ jobs:
     steps:
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
+
+      - name: ⏱️ Random Sleep (0–6 hours)
+        shell: bash
+        run: |
+          DELAY=$(( RANDOM % 21600 ))  # up to 6 hours (21600 seconds)
+          echo "Sleeping for $DELAY seconds (~$((DELAY / 60)) minutes)"
+          sleep $DELAY
 
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
@@ -76,7 +83,7 @@ jobs:
           STREAK=$(grep -oP "Streak: \K.*" streak.txt || echo "Unknown")
           curl -H "Content-Type: application/json" \
                -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-               -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK \"}"
+               -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK\"}"
 
       # 💬 Slack Notifications (Badge + Summary)
       - name: 💬 Send Slack Notifications
