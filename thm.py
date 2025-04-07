@@ -73,18 +73,18 @@ def fetch_badge_profile():
     soup = BeautifulSoup(response.text, "html.parser")
 
     username = soup.find("span", class_="user_name").text.strip()
-    rank = soup.find("span", class_="rank-title").text.strip()
+    level = soup.find("span", class_="rank-title").text.strip()
     details = soup.find_all("span", class_="details-text")
 
-    trophies = details[0].text.strip() if len(details) > 0 else None
+    rank = details[0].text.strip() if len(details) > 0 else None
     streak = details[1].text.strip() if len(details) > 1 else None
     awards = details[2].text.strip() if len(details) > 2 else None
     rooms_completed = details[3].text.strip() if len(details) > 3 else None
 
     badge_output = (
         f"👤 Username: {username}\n"
-        f"🏅 Rank: {rank}\n"
-        f"🥇 Trophies: {trophies}\n"
+        f"⚡ level: {level}\n"
+        f"🏆 Rank: {rank}\n"
         f"🔥 Streak: {streak}\n"
         f"🎖️ Awards: {awards}\n"
         f"🚪 Rooms Completed: {rooms_completed}\n"
