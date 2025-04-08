@@ -13,13 +13,6 @@ jobs:
       - name: 📂 Checkout repository
         uses: actions/checkout@v4
 
-      - name: ⏱️ Random Sleep (0–6 hours)
-        shell: bash
-        run: |
-          DELAY=$(( RANDOM % 21600 ))  # up to 6 hours (21600 seconds)
-          echo "Sleeping for $DELAY seconds (~$((DELAY / 60)) minutes)"
-          sleep $DELAY
-
       - name: 🐍 Set up Python
         uses: actions/setup-python@v5
         with:
