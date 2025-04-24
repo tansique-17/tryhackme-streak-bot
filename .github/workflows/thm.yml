@@ -76,7 +76,7 @@ jobs:
           STREAK=$(grep -oP "Streak: \K.*" streak.txt || echo "Unknown")
           curl -H "Content-Type: application/json" \
                -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-               -d "{\"username\": \"THM Bot\", \"content\": \"\u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK\"}"
+               -d "{\"username\": \"THM Bot\", \"content\": \"@everyone \u2705 TryHackMe Streak Bot: Task completed successfully! \uD83D\uDD25 Current Streak: $STREAK\"}"
 
       # 💬 Slack Notifications (Badge + Summary)
       - name: 💬 Send Slack Notifications
@@ -95,6 +95,6 @@ jobs:
             $streakValue = "Unknown"
           }
 
-          $summary = "✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakValue"
+          $summary = "@tansique.17 ✅ TryHackMe Streak Bot: Task completed successfully! 🔥 Streak: $streakValue"
           $summaryPayload = @{ text = "$summary" } | ConvertTo-Json -Compress
           Invoke-RestMethod -Uri $webhook -Method Post -Body $summaryPayload -ContentType "application/json"
