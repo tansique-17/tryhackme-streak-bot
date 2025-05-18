@@ -30,6 +30,8 @@ jobs:
           playwright install chromium --with-deps --force
 
       - name: 🚀 Run TryHackMe Playwright script
+        env:
+          TRYHACKME_USER_ID: ${{ secrets.TRYHACKME_USER_ID }}
         run: python thm.py 2>&1 | tee playwright-log.txt
 
       - name: 📤 Upload Debug Logs (if failed)
