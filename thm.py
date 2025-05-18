@@ -15,7 +15,8 @@ if sys.platform == "win32":
 COOKIE_FILE = "tryhackme_cookies.pkl"
 ROOM_URL = "https://tryhackme.com/room/tutorial"
 ANSWER = "flag{connection_verified}"
-url = "https://tryhackme.com/api/v2/badges/public-profile?userPublicId=1282671"
+user_id = os.environ.get("TRYHACKME_USER_ID")
+url = f"https://tryhackme.com/api/v2/badges/public-profile?userPublicId={user_id}"
 
 # === Automate Room Reset & Flag Submission ===
 def automate_tryhackme():
