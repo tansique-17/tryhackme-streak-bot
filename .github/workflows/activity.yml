@@ -41,17 +41,3 @@ jobs:
           name: playwright-debug-logs
           path: playwright-log.txt
 
-      # ✅ Telegram Notifications (Badge + Summary)
-      - name: ✅ Send Telegram Notifications
-        if: success()
-        shell: pwsh
-        run: |
-          $chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
-          $bot_token = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          $badge = Get-Content streak.txt -Raw
-
-          $summary = "✅ Event triggered successfully!"
-          Invoke-RestMethod -Uri "https://api.telegram.org/bot$bot_token/sendMessage" `
-            -Method Post `
-            -Body @{ chat_id = $chat_id; text = $summary } `
-            -ContentType "application/x-www-form-urlencoded"
