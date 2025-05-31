@@ -2,7 +2,7 @@ name: Daily TryHackMe Automation
 
 on:
   schedule:
-    - cron: '*/60 * * * *'  # Runs once daily at midnight UTC
+    - cron: '0 0 * * *'  # Runs once daily at midnight UTC
   workflow_dispatch:
 
 jobs:
@@ -41,3 +41,16 @@ jobs:
           name: playwright-debug-logs
           path: playwright-log.txt
 
+      # ✅ Telegram Notifications (Badge + Summary)
+      - name: ✅ Send Telegram Notifications
+        if: success()
+        shell: pwsh
+        run: |
+          $chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
+          $bot_token = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+
+          $summary = "✅ Event completed successfully!"
+          Invoke-RestMethod -Uri "https://api.telegram.org/bot$bot_token/sendMessage" `
+            -Method Post `
+            -Body @{ chat_id = $chat_id; text = $summary } `
+            -ContentType "application/x-www-form-urlencoded"
