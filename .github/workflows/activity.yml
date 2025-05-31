@@ -1,4 +1,4 @@
-name: Daily TryHackMe Automation
+name: Event TryHackMe Automation
 
 on:
   schedule:
