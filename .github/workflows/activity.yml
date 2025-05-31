@@ -1,8 +1,8 @@
-name: Event TryHackMe Automation
+name: TryHackMe Event Automation
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Runs daily at midnight UTC
+    - cron: '*/10 * * * *'  # Runs once daily at midnight UTC
   workflow_dispatch:
 
 jobs:
@@ -17,34 +17,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
-
-      - name: 💾 Cache Playwright binaries
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-v1
 
       - name: 📥 Decode and save cookies.pkl from GitHub Secrets
         run: |
           echo "${{ secrets.COOKIES_PKL }}" | base64 --decode > tryhackme_cookies.pkl
         shell: bash
 
-      - name: 📦 Conditional Dependency Installation
-        shell: bash
+      - name: 📥 Install dependencies
         run: |
-          echo "🔍 Checking and installing dependencies if needed..."
-
-          # Install pip requirements only if not already satisfied
-          pip check || pip install -r requirements.txt --no-cache-dir
-
-          # Install Playwright browsers only if not already installed
-          if [ ! -d ~/.cache/ms-playwright ]; then
-            echo "📥 Playwright binaries not found. Installing..."
-            playwright install chromium --with-deps --force
-          else
-            echo "✅ Playwright already installed. Skipping..."
-          fi
+          python -m pip install --upgrade pip --no-cache-dir
+          pip install -r requirements.txt --no-cache-dir
+          playwright install chromium --with-deps --force
 
       - name: 🚀 Run TryHackMe Playwright script
         env:
@@ -58,12 +41,14 @@ jobs:
           name: playwright-debug-logs
           path: playwright-log.txt
 
+      # ✅ Telegram Notifications (Badge + Summary)
       - name: ✅ Send Telegram Notifications
         if: success()
         shell: pwsh
         run: |
           $chat_id = "${{ secrets.TELEGRAM_CHAT_ID }}"
           $bot_token = "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          $badge = Get-Content streak.txt -Raw
 
           $summary = "✅ Event triggered successfully!"
           Invoke-RestMethod -Uri "https://api.telegram.org/bot$bot_token/sendMessage" `
