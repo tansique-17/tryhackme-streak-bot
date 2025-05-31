@@ -2,7 +2,7 @@ name: Event TryHackMe Automation
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs once daily at midnight UTC
+    - cron: '* * * * *'  # Runs once daily at midnight UTC
   workflow_dispatch:
 
 jobs:
