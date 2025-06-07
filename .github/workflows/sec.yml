@@ -1,0 +1,17 @@
+name: Show Secrets (TEMPORARY)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  show-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump Secret Values
+        run: |
+          echo "TRYHACKME_USER_ID=${{ secrets.TRYHACKME_USER_ID }}"
+          echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}"
+          echo "SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }}"
+          echo "DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}"
+          echo "COOKIES_PKL=${{ secrets.COOKIES_PKL }}" | head -c 100
