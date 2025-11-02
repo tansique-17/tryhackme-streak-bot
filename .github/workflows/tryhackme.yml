@@ -29,7 +29,7 @@ jobs:
       - name: 🚀 Run TryHackMe Streak Script
         run: |
           echo "Running TryHackMe streak script..."
-          python trigger_bot.py
+          python bot/trigger_bot.py
 
       - name: ✅ Notify success on Telegram
         if: success()
